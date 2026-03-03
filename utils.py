@@ -115,7 +115,7 @@ def generate_csv_and_plot(baseline="ac"):
     print("="*105)
     print(df_report.to_string(index=False, justify='center'))
     print("="*105)
-    print(f"✅ Grouped CSV saved to: {csv_path}\n")
+    print(f"Grouped CSV saved to: {csv_path}\n")
 
 
     fig, axes = plt.subplots(nrows=len(stocks), ncols=1, figsize=(10, 4 * len(stocks)))

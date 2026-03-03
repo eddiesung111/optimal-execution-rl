@@ -5,10 +5,7 @@ import numpy as np
 import pickle
 import pandas as pd
 
-from src.agent_ddqn import DDQNAgent
-from src.environment import ExecutionEnvironment
-from src.baseline_ac import AlmgrenChrissModel
-from src.agent_tabular import QAgent
+from src import DDQNAgent, ExecutionEnvironment, AlmgrenChrissModel, QAgent
 
 def load_market_data(tickers, T=8, tau=60, eta=0.1):
     print("--- Loading Market Data and Calculating AC Baselines ---")
@@ -137,7 +134,7 @@ def train_ddqn(dfs_dict, ac_trajectories_dict, total_shares_dict, episodes=50000
 
 def test_tabular(dfs_dict, ac_trajectories_dict, total_shares_dict, ticker, start_indices):
     episodes = len(start_indices)
-    print(f"--- Testing Tabular DP on {ticker} ({episodes} episodes) ---")
+    print(f"\n--- Testing Tabular DP on {ticker} ({episodes} episodes) ---")
     
     env = ExecutionEnvironment(dfs_dict, total_shares_dict, is_ddqn=False)
     agent = QAgent(
@@ -156,7 +153,7 @@ def test_tabular(dfs_dict, ac_trajectories_dict, total_shares_dict, ticker, star
         print_trajectory = (episode == 0)
         
         if print_trajectory:
-            print(f"\n--- Trajectory & State Inspection: {ticker} ---")
+            print(f"--- Trajectory & State Inspection: {ticker} ---")
             print(f"Step | TWAP Shares | RL Shares | Mult  | [Time, Inv, Spread, Vol, Mom]") 
             print("-" * 75)
         
@@ -199,7 +196,7 @@ def test_tabular(dfs_dict, ac_trajectories_dict, total_shares_dict, ticker, star
 
 def test_ddqn(dfs_dict, ac_trajectories_dict, total_shares_dict, ticker, start_indices):
     episodes = len(start_indices)
-    print(f"--- Testing DDQN on {ticker} ({episodes} episodes) ---")
+    print(f"\n--- Testing DDQN on {ticker} ({episodes} episodes) ---")
     
     env = ExecutionEnvironment(dfs_dict, total_shares_dict, is_ddqn=True)
     agent = DDQNAgent(state_dim=6, action_dim=len(env.action_space))
@@ -214,7 +211,7 @@ def test_ddqn(dfs_dict, ac_trajectories_dict, total_shares_dict, ticker, start_i
         print_trajectory = (episode == 0)
         
         if print_trajectory:
-            print(f"\n--- Trajectory & State Inspection: {ticker} ---")
+            print(f"--- Trajectory & State Inspection: {ticker} ---")
             print(f"Step | TWAP Shares | RL Shares | Mult  | [Time , Inv  , spn  , vpn  , Imbal, AutoC]")
             print("-" * 92)
         
@@ -262,9 +259,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     STOCK = ["AAPL", "AMZN", "GOOG", "INTC", "MSFT"]
-    dfs, ac_trajs, total_shares = load_market_data(STOCK) # Implement this based on your codebase
+    dfs, ac_trajs, total_shares = load_market_data(STOCK)
 
-    print(f"🚀 Initializing {args.agent.upper()} agent in {args.mode.upper()} mode...")
+    print(f"Initializing {args.agent.upper()} agent in {args.mode.upper()} mode...")
     
     if args.mode == 'train':
         if args.agent == 'tabular':
@@ -273,7 +270,7 @@ if __name__ == "__main__":
             train_ddqn(dfs, ac_trajs, total_shares, episodes=2000 if args.debug else 50000)
 
     elif args.mode == 'test':
-        np.random.seed(16112001) # MY BIRTHDAY!!!
+        np.random.seed(16112001) # !!!MY BIRTHDAY!!!
         
         all_histories = {}
         test_eps = 10 if args.debug else 500
@@ -303,5 +300,5 @@ if __name__ == "__main__":
         with open(save_path, "wb") as f:
             pickle.dump(all_histories, f)
             
-        print(f"\n✅ Raw test data saved to: {save_path}")
-        print("Run `python utils_results.py` to generate the CSV and comparison graphs.")
+        print(f"\nRaw test data saved to: {save_path}")
+        print("Run `python utils.py` to generate the CSV and comparison graphs.")
