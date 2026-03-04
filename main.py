@@ -301,4 +301,4 @@ if __name__ == "__main__":
             pickle.dump(all_histories, f)
             
         print(f"\nRaw test data saved to: {save_path}")
-        print("Run `python utils.py` to generate the CSV and comparison graphs.")
+        print("Run `python3 utils.py` to generate the CSV and comparison graphs.")
