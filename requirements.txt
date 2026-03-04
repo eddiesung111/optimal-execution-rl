@@ -1,2 +1,5 @@
-matplotlib
+torch
 numpy
+pandas
+matplotlib
+seaborn

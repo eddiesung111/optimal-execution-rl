@@ -1,7 +1,6 @@
 # src/data_loader.py
 import pandas as pd
 import numpy as np
-import os
 from pathlib import Path
 
 def process_lobster_dataset(ticker, orderbook_file, message_file, output_file):
@@ -45,8 +44,8 @@ def process_lobster_dataset(ticker, orderbook_file, message_file, output_file):
 
 
     df_snapshot['Spread'] = df_snapshot['ap1'] - df_snapshot['bp1']
-    df_snapshot['spn'] = df_snapshot['Spread'].rolling(window = 960, min_periods = 240).rank(pct=True)
-    df_snapshot['vpn'] = df_snapshot['av1'].rolling(window = 960, min_periods = 240).rank(pct=True)
+    df_snapshot['spn'] = df_snapshot['Spread'].rolling(window = 960, min_periods=240).rank(pct=True)
+    df_snapshot['vpn'] = df_snapshot['av1'].rolling(window = 960, min_periods=240).rank(pct=True)
 
     df_snapshot['p_mid'] = (df_snapshot['ap1'] + df_snapshot['bp1']) / 2.0
     df_snapshot['v_ask_total'] = df_snapshot[['av1', 'av2', 'av3', 'av4', 'av5']].sum(axis=1)
@@ -57,8 +56,8 @@ def process_lobster_dataset(ticker, orderbook_file, message_file, output_file):
     df_snapshot['log_return'] = np.log(df_snapshot['p_mid'] / df_snapshot['p_mid'].shift(1))
     df_snapshot['auto_corr'] = df_snapshot['log_return'].rolling(window=300, min_periods=60).corr(df_snapshot['log_return'].shift(60)).fillna(0)
 
-    df_snapshot['auto_corr_mean'] = df_snapshot['auto_corr'].rolling(window=900, min_periods=150).mean().fillna(0)
-    df_snapshot['auto_corr_std'] = df_snapshot['auto_corr'].rolling(window=900, min_periods=150).std().fillna(1e-6)
+    df_snapshot['auto_corr_mean'] = df_snapshot['auto_corr'].rolling(window = 960, min_periods=150).mean().fillna(0)
+    df_snapshot['auto_corr_std'] = df_snapshot['auto_corr'].rolling(window = 960, min_periods=150).std().fillna(1e-6)
     df_snapshot.dropna(subset=['spn', 'vpn'], inplace=True)
     df_snapshot.to_csv(output_file, index=False)
 

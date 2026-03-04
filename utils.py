@@ -93,7 +93,7 @@ def generate_csv_and_plot(baseline="ac"):
         # --- ROW 3: WINNER ---
         report_rows.append({
             "Ticker": "",  
-            "Model": "WINNER",
+            "Model": "Winner",
             "GLR": win_glr,
             "P[ΔP&L > 0]": win_prob,
             "Std.": "-",

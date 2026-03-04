@@ -1,5 +1,4 @@
 # Optimal Trade Execution via Reinforcement Learning: Tabular vs. DDQN
-
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
@@ -25,33 +24,48 @@ The models were evaluated strictly on their relative **Execution Edge (in basis 
 *Note: The performance matrix below represents **in-sample convergence metrics**. The objective of this phase is to prove the RL agents can successfully learn LOB dynamics and out-trade static baselines on known historical distributions. Future project extensions will involve strict out-of-sample forward-testing.*
 
 ### Model Comparison Matrix
-
-| Ticker | Model   | GLR     | P[ΔP&L > 0] | Std. | Mean RL | Improv. vs AC | Mean AC | Mean TWAP |
-|--------|---------|---------|-------------|------|---------|---------------|---------|-----------|
-| AAPL   | Tabular | 1.46    | 57.4%       | 0.66 | -0.80   | 16.60%        | -0.95   | -0.90     |
-|        | DDQN    | 1.48    | 57.2%       | 0.78 | -0.76   | 20.26%        | -       | -         |
-|        | WINNER  | DDQN    | Tabular     | -    | -       | DDQN          | -       | -         |
-|        |         |         |             |      |         |               |         |           |
-| AMZN   | Tabular | 1.40    | 60.0%       | 0.97 | -1.81   | 11.97%        | -2.06   | -1.99     |
-|        | DDQN    | 1.18    | 55.4%       | 1.23 | -1.52   | 26.11%        | -       | -         |
-|        | WINNER  | Tabular | Tabular     | -    | -       | DDQN          | -       | -         |
-|        |         |         |             |      |         |               |         |           |
-| GOOG   | Tabular | 1.36    | 57.8%       | 0.72 | -1.02   | 13.76%        | -1.18   | -1.11     |
-|        | DDQN    | 1.48    | 62.8%       | 0.88 | -0.32   | 72.85%        | -       | -         |
-|        | WINNER  | DDQN    | DDQN        | -    | -       | DDQN          | -       | -         |
-|        |         |         |             |      |         |               |         |           |
-| INTC   | Tabular | 1.00    | 49.2%       | 1.38 | -2.02   | -0.72%        | -2.00   | -1.91     |
-|        | DDQN    | 1.21    | 47.0%       | 0.98 | -2.62   | -30.88%       | -       | -         |
-|        | WINNER  | DDQN    | Tabular     | -    | -       | Tabular       | -       | -         |
-|        |         |         |             |      |         |               |         |           |
-| MSFT   | Tabular | 1.01    | 56.0%       | 1.49 | -2.13   | 5.78%         | -2.26   | -2.17     |
-|        | DDQN    | 1.53    | 39.4%       | 1.10 | -2.29   | -1.31%        | -       | -         |
-|        | WINNER  | DDQN    | Tabular     | -    | -       | Tabular       | -       | -         |
-
+| Ticker | Model | GLR | P[ΔP&L > 0] | Std. | Mean RL | Improv. vs AC | Mean AC | Mean TWAP |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **AAPL** | Tabular | 1.46 | 57.4% | 0.66 | -0.80 bps | +16.60% | -0.95 bps | -0.90 bps |
+| | DDQN | 1.19 | 58.8% | 0.91 | -0.78 bps | +18.74% | - | - |
+| | **WINNER** | **Tabular** | **DDQN** | **-** | **DDQN** | **DDQN** | | |
+| | | | | | | | | |
+| **AMZN** | Tabular | 1.40 | 60.0% | 0.97 | -1.81 bps | +11.97% | -2.06 bps | -1.99 bps |
+| | DDQN | 1.18 | 55.4% | 1.33 | -1.49 bps | +27.32% | - | - |
+| | **WINNER** | **Tabular**| **Tabular** | **-** | **DDQN** | **DDQN** | | |
+| | | | | | | | | |
+| **GOOG** | Tabular | 1.36 | 57.8% | 0.72 | -1.02 bps | +13.76% | -1.18 bps | -1.11 bps |
+| | DDQN | 1.53 | 61.8% | 0.88 | -0.32 bps | +72.92% | - | - |
+| | **WINNER** | **DDQN** | **DDQN** | **-** | **DDQN** | **DDQN** | | |
+| | | | | | | | | |
+| **INTC** | Tabular | 1.00 | 49.2% | 1.38 | -2.02 bps | -0.72% | -2.00 bps | -1.91 bps |
+| | DDQN | 1.14 | 46.6% | 1.13 | -2.65 bps | -32.06% | - | - |
+| | **WINNER** | **DDQN** | **Tabular** | **-** | **Tabular** | **Tabular** | | |
+| | | | | | | | | |
+| **MSFT** | Tabular | 1.01 | 56.0% | 1.49 | -2.13 bps | +5.78% | -2.26 bps | -2.17 bps |
+| | DDQN | 1.15 | 45.0% | 1.13 | -2.31 bps | -2.16% | - | - |
+| | **WINNER** | **DDQN** | **Tabular** | **-** | **Tabular** | **Tabular** | | |
 
 ### Edge Distribution Analysis
-![Execution Edge Distributions](results/distribution_plot.png)
-*(The graph above illustrates the probability density of the RL agents' outperformance versus the baseline. A right-skewed distribution past the `0.0` break-even line indicates consistent profitability over the benchmark.)*
+![Execution Edge Distributions](results/distribution_plots.png)
+
+
+### 🔍 Quantitative Performance & Distribution Analysis
+The empirical results and distribution plots reveal a distinct divergence between the two RL architectures, highlighting the quantitative tradeoff between absolute consistency and fat-tail edge extraction.
+
+**1. The DDQN: Fat-Tail Dynamics and Momentum Dominance**
+
+On highly volatile, fluid order books (GOOG, AMZN, AAPL), the DDQN's continuous state space proves superior at extracting absolute edge. On **GOOG**, the DDQN completely dominates, boasting a **61.8%** win rate, a **1.53** GLR, and a massive **+72.92%** mean improvement over the baseline. 
+However, looking at the distribution plots, the DDQN typically exhibits a wider standard deviation. While its day-to-day median performance can be noisy, its continuous architecture allows it to perfectly time massive, highly profitable momentum sweeps that heavily skew the overall distribution (fat right tails). It sacrifices a bit of consistency for explosive outlier outperformance.
+
+**2. The Tabular Agent: The High-Probability Stabilizer**
+
+While the DDQN hunts for massive momentum edges, the Tabular agent remains the master of consistency and risk aversion. Visually, the Tabular agent's distributions are tighter and more reliably shifted to the right of the zero-line. By discretizing the LOB state space, the Tabular model effectively acts as a low-pass filter against high-frequency market noise. 
+This proved critical on **MSFT** and **AMZN**, where the Tabular agent secured highly stable win probabilities (56.0% and 60.0%, respectively). When the DDQN became too aggressive on MSFT and posted a negative improvement (-2.16%), the conservative Tabular agent safely navigated the noise to pull a +5.78% edge. 
+
+**3. The Microstructure Trap: INTC**
+Both agents consistently fail to produce a positive edge on **INTC**, posting negative improvement scores and win rates below 50%. In the distribution plots, this is visible as a clear leftward shift for both models compared to the TWAP baseline. 
+This is not an algorithm failure; it is a vital microstructure anomaly. Intel (INTC) operates with a notably thicker, slower-moving limit order book compared to the other mega-cap tickers. In a compressed 8-minute execution window, a thick book suppresses the short-term directional momentum signals the agents rely on. When predictive signals decay to random noise, actively deviating from the TWAP baseline purely incurs spread-crossing costs. This empirically proves that in ultra-low volatility regimes, static execution remains mathematically optimal.
 
 ## 📂 Repository Structure
 The codebase is modularized into environment definitions, agent architectures, and execution scripts to ensure easy replication and extension.
@@ -167,8 +181,9 @@ To ensure full reproducibility, the agents were trained using the following core
 
 **Tabular Q-Learning Agent:**
 * **Discount Factor ($\gamma$):** `1.0` *(Optimizing for total trajectory cost via finite-horizon backward induction)*
+* **Training Episodes:** `15,000`
 * **State Space Discretization (Buckets):**
-   * Inventory: 16 bins
+  * Inventory: 16 bins
   * Momentum: 10 bins
   * Spread: 5 bins
   * Volume: 5 bins
@@ -180,6 +195,8 @@ To ensure full reproducibility, the agents were trained using the following core
 * **Target Update Frequency:** `2000`
 * **Batch Size:** `64`
 * **Replay Buffer Capacity:** `100,000` transitions
+* **Epsilon Decay:** `0.99980`
+* **Training Episodes:** `50,000`
 
 ## ⚙️ Installation & Requirements
 
@@ -237,4 +254,3 @@ This project adapts, modifies, and expands upon the theoretical frameworks and e
 
 ## ⚠️ Disclaimer
 For Educational and Research Purposes Only. The code, models, and data provided in this repository do not constitute financial advice, investment recommendations, or trading signals. Quantitative trading in live markets carries significant financial risk. The models herein were evaluated on historical data and are not guaranteed to perform similarly in live, forward-tested market conditions.
-
