@@ -13,44 +13,40 @@ The system leverages real-world historical Limit Order Book (LOB) data across ma
 
 The performance of both models is benchmarked head-to-head against industry-standard execution algorithms: the **Almgren-Chriss (AC)** model and **Time-Weighted Average Price (TWAP)**.
 
-### 🚀 Key Implementations & Technical Highlights
-* **LOB Data Pipeline & Microstructure Engineering:** Fetched and processed raw order book data, engineering predictive high-frequency features including **Order Book Imbalance** and **Log-Return Autocorrelation (Momentum)** to give the agents directional awareness before crossing the spread.
-* **Rigorous State Normalization:** Engineered a robust state-processing pipeline for the DDQN, mathematically restricting all continuous variables (Time, Inventory, Spread, Imbalance, Momentum) to a strict `[-1.0, 1.0]` range to stabilize deep learning gradients.
-* **Custom Reward Shaping & Action Spaces:** Redesigned the reward function logic and action spaces from existing literature to better penalize inventory risk and capture relative execution edge across fundamentally different stocks.
-* **Synchronized Evaluation Engine:** Built a deterministic testing framework that forces both RL agents and the baselines (AC and TWAP) to trade the *exact same* historical market slices, ensuring mathematically fair performance comparisons (Gain-Loss Ratio, Win Probability, Mean Edge).
-
+### 🚀 Key Research Highlights
+* **Empirical LOB Microstructure:** Unlike standard academic environments that rely on simulated price paths and theoretical slippage formulas, this project calculates exact execution costs by physically "walking the order book" across five mega-cap equities (AAPL, AMZN, GOOG, INTC, MSFT).
+* **Solving the "Blind AI" Problem:** Standard RL execution agents fail in highly liquid real-world markets because they are punished for adverse price drops they cannot foresee. To fix this, this project engineers custom predictive features—**Order Book Imbalance** and **Rolling Autocorrelation**—giving the AI the directional awareness needed to predict short-term momentum and dynamically adjust its execution speed.
 ---
 
 ## 📊 Key Results & Performance
 
 The models were evaluated strictly on their relative **Execution Edge (in basis points)** against the mathematically optimal AC trajectory and TWAP. A positive improvement percentage indicates the agent successfully out-traded the benchmark, saving execution costs.
 
-*Note: The environment forces a highly compressed 8-step execution timeline to stress-test the agents in a noisy, high-frequency microstructure setting.*
+*Note: The performance matrix below represents **in-sample convergence metrics**. The objective of this phase is to prove the RL agents can successfully learn LOB dynamics and out-trade static baselines on known historical distributions. Future project extensions will involve strict out-of-sample forward-testing.*
 
 ### Model Comparison Matrix
 
 | Ticker | Model   | GLR     | P[ΔP&L > 0] | Std. | Mean RL | Improv. vs AC | Mean AC | Mean TWAP |
 |--------|---------|---------|-------------|------|---------|---------------|---------|-----------|
 | AAPL   | Tabular | 1.46    | 57.4%       | 0.66 | -0.80   | 16.60%        | -0.95   | -0.90     |
-|        | DDQN    | 1.49    | 53.6%       | 0.86 | -0.79   | 17.21%        | -       | -         |
+|        | DDQN    | 1.48    | 57.2%       | 0.78 | -0.76   | 20.26%        | -       | -         |
 |        | WINNER  | DDQN    | Tabular     | -    | -       | DDQN          | -       | -         |
 |        |         |         |             |      |         |               |         |           |
 | AMZN   | Tabular | 1.40    | 60.0%       | 0.97 | -1.81   | 11.97%        | -2.06   | -1.99     |
-|        | DDQN    | 1.33    | 59.4%       | 1.18 | -1.42   | 30.89%        | -       | -         |
+|        | DDQN    | 1.18    | 55.4%       | 1.23 | -1.52   | 26.11%        | -       | -         |
 |        | WINNER  | Tabular | Tabular     | -    | -       | DDQN          | -       | -         |
 |        |         |         |             |      |         |               |         |           |
 | GOOG   | Tabular | 1.36    | 57.8%       | 0.72 | -1.02   | 13.76%        | -1.18   | -1.11     |
-|        | DDQN    | 1.25    | 57.8%       | 0.96 | -0.43   | 63.69%        | -       | -         |
-|        | WINNER  | Tabular | DDQN        | -    | -       | DDQN          | -       | -         |
+|        | DDQN    | 1.48    | 62.8%       | 0.88 | -0.32   | 72.85%        | -       | -         |
+|        | WINNER  | DDQN    | DDQN        | -    | -       | DDQN          | -       | -         |
 |        |         |         |             |      |         |               |         |           |
 | INTC   | Tabular | 1.00    | 49.2%       | 1.38 | -2.02   | -0.72%        | -2.00   | -1.91     |
-|        | DDQN    | 1.27    | 44.8%       | 1.04 | -2.63   | -31.45%       | -       | -         |
+|        | DDQN    | 1.21    | 47.0%       | 0.98 | -2.62   | -30.88%       | -       | -         |
 |        | WINNER  | DDQN    | Tabular     | -    | -       | Tabular       | -       | -         |
 |        |         |         |             |      |         |               |         |           |
 | MSFT   | Tabular | 1.01    | 56.0%       | 1.49 | -2.13   | 5.78%         | -2.26   | -2.17     |
-|        | DDQN    | 1.07    | 38.4%       | 1.23 | -2.45   | -8.56%        | -       | -         |
+|        | DDQN    | 1.53    | 39.4%       | 1.10 | -2.29   | -1.31%        | -       | -         |
 |        | WINNER  | DDQN    | Tabular     | -    | -       | Tabular       | -       | -         |
-
 
 
 ### Edge Distribution Analysis
@@ -58,61 +54,98 @@ The models were evaluated strictly on their relative **Execution Edge (in basis 
 *(The graph above illustrates the probability density of the RL agents' outperformance versus the baseline. A right-skewed distribution past the `0.0` break-even line indicates consistent profitability over the benchmark.)*
 
 ## 📂 Repository Structure
-
 The codebase is modularized into environment definitions, agent architectures, and execution scripts to ensure easy replication and extension.
 
 ```text
-├── data/                   # Raw and processed LOB data (CSV/Parquet)
+├── data/                
 ├── src/             
 │   ├── agent_ddqn.py     
 │   ├── agent_tabular.py    
 │   ├── baseline_ac.py      
 │   ├── data_loader.py   
 │   └── environment.py    
-├── models/                # Saved model weights (.pth and .npy files)
-├── results/                # Output directory for CSV reports and distribution plots
-├── main.py                 # Main execution script for training and testing loops
-├── utils.py        # Automated quantitative metrics and plotting engine
-├── requirements.txt        # Python package dependencies
+├── models/        
+├── results/        
+├── main.py          
+├── utils.py  
+├── requirements.txt      
 └── README.md
 ```
 
-## 📈 Dataset & Feature Engineering
+## 📈 Dataset & High-Frequency Microstructure
 
-The models are trained and evaluated on highly granular historical Limit Order Book (LOB) data for five major mega-cap equities: AAPL, AMZN, GOOG, INTC, and MSFT.
+The models are trained and evaluated on highly granular historical Limit Order Book (LOB) data for five major mega-cap equities: **AAPL, AMZN, GOOG, INTC, and MSFT**. 
 
-To give the RL agents directional awareness before crossing the spread, the raw LOB data was transformed into a set of reactive, high-frequency predictive features:
+Rather than relying on theoretical market simulations or synthetic price generation, this environment replays actual historical LOB snapshots. This forces the agents to navigate real-world microstructure phenomena—such as transient liquidity voids, sudden spread widening, and order book imbalances—at a high-frequency resolution. 
 
-* **Spread & Volume Percentiles:** Normalized historical trailing percentiles for the bid-ask spread and available queue volumes to detect liquidity droughts.
-* **Order Book Imbalance:** Measures the buy/sell pressure at the top of the book, allowing the agent to front-run immediate micro-trend shifts.
-* **Log-Return Autocorrelation (Momentum):** Captures short-term price momentum.
-    * *The "Double-Lag" Correction:* To prevent the network from trading on stale data, this project computes a fast, reactive 5-minute rolling correlation against a longer 15-minute background mean, ensuring the agent reacts to immediate order flow rather than 30-minute-old signals.
+**Chronological Integrity:** The environment strictly enforces forward-stepping time dynamics. Within any given episode, the agent only ever receives trailing state data (e.g., historical rolling autocorrelation) and has zero look-ahead access to future order book states or price ticks.
 
+---
 ## 🕹️ The RL Execution Environment
-The custom environment (ExecutionEnvironment) simulates the mechanics of liquidating a large block of shares. To stress-test the agents in a noisy microstructure setting, the execution horizon is heavily compressed into 8 execution steps over an 8-minute trading window.
 
-### State Space (Zero-Centered & Normalized)
-For the DDQN, passing raw financial floats directly into a neural network leads to catastrophic gradient instability. Therefore, the 6-dimensional state space is strictly bounded to a $[-1,1]$. There are six features in total, 'Time Elapsed', 'Inventory Remaining', 'Spread', 'Ask Volume', 'Order Book Imbalance', `Autocorrelation (Z-Score)`
+The custom environment (`ExecutionEnvironment`) simulates the mechanics of liquidating a large block of shares. To stress-test the agents in a noisy microstructure setting, the execution horizon is heavily compressed into **8 execution steps** over an 8-minute trading window.
 
-### Action Space
-The agent does not output raw share amounts. Instead, the action space is a set of 11 discrete multipliers applied to the standard Time-Weighted Average Price (TWAP) trajectory:
-* `Action Space`: $\beta \in [0.5x, 0.6x, ...., 1.4x, 1.5x]$
-* An action of `1.0x` exactly matches the TWAP execution for that time step.
+### Action Space (TWAP Multipliers)
+The agent does not output raw share amounts. Instead, it selects a discrete multiplier $\beta$ applied to a standard Time-Weighted Average Price (TWAP) baseline trade. 
+* **Baseline Trade:** $Q_{baseline} = \text{Total Shares} / T$
+* **Execution Amount:** $Q_{buy} = \beta \times Q_{baseline}$
+* **Action Space:** $\beta \in \\{0.5, 0.6, \dots, 1.0, \dots, 1.4, 1.5\\}$ (Where an action of `1.0` exactly matches the TWAP trajectory).
 
-### Reward Shaping: Slippage & Inventory Risk
-Instead of evaluating the agent solely on absolute implementation shortfall, the reward function is engineered to balance immediate execution costs against ongoing market exposure. The step reward is calculated as the negative sum of two distinct penalties:
+### Reward Function: Walking the Book & Inventory Risk
+Standard academic models (like Almgren-Chriss) rely on theoretical formulas to estimate temporary and permanent market impact. Because this environment uses highly liquid, real-world data, theoretical impact models often clash with reality. 
 
-1. **Slippage Penalty:** The immediate cost of crossing the spread and absorbing liquidity when executing a slice of the order.
-2. **Inventory Penalty:** The market risk of holding unexecuted shares. This is calculated dynamically at each step based on the remaining inventory multiplied by the continuous drift in the asset's mid-price.
+Instead, this project calculates exact empirical slippage by literally **"walking the order book"**—consuming the available volume at each ask price level until the order slice $Q_{buy}$ is filled.
 
-**The Strategic Rationale:** Incorporating the *Inventory Penalty* is the exact reason **Autocorrelation (Momentum)** and **Order Book Imbalance** were engineered into the state space. To minimize this penalty, the AI must learn to predict short-term price trends. 
-* If the agent's features detect *adverse* momentum (the price is moving away), it learns to accelerate execution (e.g., choosing a `1.5x` multiplier). 
-* If it detects *favorable* momentum, it learns to slow down execution (e.g., `0.5x`) to ride the trend and capture better prices later in the episode. 
+The step reward is carefully shaped to balance immediate execution costs against ongoing market exposure. It is the negative sum of two specific penalties, normalized into basis points (bps) against the ideal arrival cost:
 
-Finally, the raw step cost is divided by the total ideal arrival cost to normalize the execution reward into basis points (bps) for stable Q-value updates.
+**1. Slippage Penalty ($S_t$)**
+The immediate cost of crossing the spread and absorbing liquidity compared to the theoretical mid-price.
 
+$$S_t = \text{Actual LOB Cost} - (Q_{buy} \times \text{MidPrice}_t)$$
+
+**2. Inventory Penalty ($I_t$)**
+The market risk of holding unexecuted shares. If the price moves adversely while the agent holds inventory, it incurs a massive penalty. This is the core mechanism that forces the AI to pay attention to the Momentum and Imbalance features.
+
+$$I_t = \text{Remaining Inventory}_{t+1} \times (\text{MidPrice}_t - \text{MidPrice}_{t-1})$$
+
+**3. Total Step Reward ($R_t$)**
+The raw step cost is the sum of slippage and inventory risk. To stabilize neural network gradients across fundamentally different stocks, this raw cost is normalized by the total ideal arrival cost (Total Shares $\times$ Initial MidPrice) and converted into basis points.
+
+$$R_t = - \left( \frac{S_t + I_t}{\text{Total Ideal Cost}} \right) \times 10000$$
+
+*(By benchmarking against the ideal arrival cost at $t=0$, the AI's objective is mathematically aligned with standard quantitative execution metrics: minimize Implementation Shortfall).*
+
+### State Space 
+To ensure the neural network learns stably without gradient explosions, the entire 6-dimensional state space is strictly normalized into a `[-1.0, 1.0]` range before being fed into the DDQN. 
+
+Before normalization, the features represent the following raw market dynamics:
+
+1. **Time Elapsed**: The current step in the episode (e.g., `[0, 8]` steps). It dictates the agent's execution urgency. As time runs out, the agent must trade more aggressively to ensure all shares are sold.
+2. **Inventory Remaining**: The raw number of shares left to execute (e.g., `[0, Total Shares]`). This defines the agent's market risk exposure. Holding too much inventory for too long exposes the agent to massive penalties if the price drops.
+3. **Spread**: The current bid-ask spread, tracked as a historical percentile `[0.0, 1.0]`. It tells the agent the immediate cost of trading. A high value (near 1.0) means the spread is unusually wide and trading right now will be very expensive.
+4. **Ask Volume**: The shares available at the best asking price, also tracked as a historical percentile `[0.0, 1.0]`. It measures liquidity depth. A low value means there aren't many shares available, so a large market order will cause high slippage.
+5. **Order Book Imbalance**: The ratio of buyers to sellers at the top of the book, naturally ranging from `[-1.0, 1.0]`. It represents which side is currently stronger. If the value is `< 0`, the ask side is heavier (more sellers), suggesting the price is about to fall.
+6. **Autocorrelation**: The rolling correlation of recent price changes `[-1.0, 1.0]`. To enable the agent to predict the trend on the next timestep. A positive value means the current price trend is strong and likely to continue, while a negative value suggests the trend is just noise and about to reverse.
+
+---
+## 🚧 Challenges & Architectural Evolution
+Building an RL agent on raw, high-frequency limit order book data presented several severe challenges that required pivoting away from standard academic assumptions.
+
+### 1. The Theoretical vs. Empirical Disconnect (Pivoting from AC to TWAP)
+Initially, the environment was built around the Almgren-Chriss (AC) framework. However, a major conflict arose when testing on real-world dataset. The AC model assumes a theoretical permanent/temporary market impact (slippage) based on execution speed. But because this project evaluates on real LOB data, I simulated slippage by literally *walking the order book*. 
+* **The Problem:** Mega-cap tech stocks (AAPL, MSFT) are highly liquid and resilient. The actual volume is so rich that walking the book results in incredibly small slippage compared to the AC model's theoretical drop. Forcing the AI to follow the AC trajectory while calculating real LOB slippage caused highly unstable learning. 
+* **The Solution (Pivoting to TWAP):** I pivoted to using **TWAP (Time-Weighted Average Price)** as the primary baseline and trajectory anchor. In a highly liquid mega-cap market with a compressed 8-minute trading horizon, the price drift between micro-steps ($\tau$) is incredibly small, and the available volume is rich. Consequently, evenly distributing the order over time (TWAP) is the near-optimal solution for minimizing impact, making it an exceptionally difficult and realistic baseline for the RL agents to beat.
+
+### 2. The "Blind AI" Problem (Aligning State Space with Reward Shaping)
+To force the AI to execute intelligently, I modified the reward logic to heavily penalize *inventory risk*—meaning the AI received a massive penalty if the price moved adversely while holding unexecuted shares.
+* **The Problem:** Performance actually tanked. The AI became entirely confused because it was being punished for price drops, but its state space (just time, spread, and volume) gave it no mathematical way to *predict* those drops. It was a partially observable environment where the AI was effectively guessing.
+* **The Solution:** I engineered two specific features to give the AI "eyes":
+  1. **Order Book Imbalance (Momentum):** Allows the AI to see whether buyers or sellers are currently dominating the micro-step.
+  2. **Rolling Autocorrelation:** Allows the AI to predict if the current momentum is a mean-reverting blip or a continuing trend.
+* **The Result:** Once the AI could mathematically correlate the Autocorrelation state with the Inventory Risk reward, performance stabilized, and the models began successfully outperforming the TWAP baseline.
+
+---
 ## 🧠 Model Architectures
-
 ### 1. Tabular Q-Learning Agent
 * **State Discretization (5 Features):** Converts continuous financial variables into fixed, discrete buckets to construct a finite Q-Table. The state space consists of five core features: **Spread, Time, Inventory, Volume, and Momentum**.
 * **Update Rule:** Instead of a standard forward-stepping epsilon-greedy exploration strategy, this model utilizes **Backward Induction**. Because the optimal execution problem has a fixed, finite time horizon (the trading window strictly ends at $T$), the agent computes the optimal policy by stepping backward from the terminal state, ensuring mathematically rigorous convergence for the discrete state-action pairs.
@@ -124,6 +157,29 @@ Finally, the raw step cost is divided by the total ideal arrival cost to normali
 * **Advantage of the DDQN:** The primary advantage of the DDQN is its ability to natively handle **continuous, high-dimensional state spaces**. While the Tabular agent suffers from the "curse of dimensionality" (adding Autocorrelation would cause the Q-table size to explode exponentially), the DDQN scales effortlessly. By not forcing the data into rigid discrete buckets, the neural network learns a much more generalized, fluid trading policy that adapts smoothly to unseen market micro-states.
 ---
 
+### Key Hyperparameters & Configuration
+To ensure full reproducibility, the agents were trained using the following core configurations. *(Note: Extensive hyperparameter tuning was required to stabilize the DDQN given the high noise-to-signal ratio of LOB data).*
+
+**Execution Environment:**
+* **Trading Horizon ($T$):** 8 execution steps
+* **Step Interval ($\tau$):** 60 seconds per step
+* **Action Space:** 11 discrete TWAP multipliers `[0.5x, 0.6x, ..., 1.5x]`
+
+**Tabular Q-Learning Agent:**
+* **Discount Factor ($\gamma$):** `1.0` *(Optimizing for total trajectory cost via finite-horizon backward induction)*
+* **State Space Discretization (Buckets):**
+   * Inventory: 16 bins
+  * Momentum: 10 bins
+  * Spread: 5 bins
+  * Volume: 5 bins
+  * *(Time is inherently discrete across the 8 steps)*
+
+**Double Deep Q-Network (DDQN):**
+* **Learning Rate ($\alpha$):** `2.5e-4`
+* **Discount Factor ($\gamma$):** `0.99` *(Bounded to prevent Q-value explosion)*
+* **Target Update Frequency:** `2000`
+* **Batch Size:** `64`
+* **Replay Buffer Capacity:** `100,000` transitions
 
 ## ⚙️ Installation & Requirements
 
@@ -131,13 +187,14 @@ This project requires Python 3.8+ and PyTorch.
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/yourusername/optimal-trade-execution-rl.git](https://github.com/yourusername/optimal-trade-execution-rl.git)
+git clone [https://github.com/eddiesung111/optimal-trade-execution-rl.git](https://github.com/eddiesung111/optimal-trade-execution-rl.git)
 cd optimal-trade-execution-rl
+```
 
 2. Create a virtual environment (recommended):
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+source venv/bin/activate
 ```
 
 3. Install the required dependencies:
@@ -180,3 +237,4 @@ This project adapts, modifies, and expands upon the theoretical frameworks and e
 
 ## ⚠️ Disclaimer
 For Educational and Research Purposes Only. The code, models, and data provided in this repository do not constitute financial advice, investment recommendations, or trading signals. Quantitative trading in live markets carries significant financial risk. The models herein were evaluated on historical data and are not guaranteed to perform similarly in live, forward-tested market conditions.
+
