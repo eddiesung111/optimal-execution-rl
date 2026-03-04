@@ -210,13 +210,13 @@ cd optimal-trade-execution-rl
 
 2. Create a virtual environment (recommended):
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
 3. Install the required dependencies:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## 🚀 How to Run
@@ -225,21 +225,21 @@ You can train either the Tabular or DDQN agent from scratch using the main execu
 
 ```bash
 # Train the Tabular Q-Learning model
-python main.py --agent tabular --mode train
+python3 main.py --agent tabular --mode train
 
 # Train the DDQN model
-python main.py --agent ddqn --mode train
+python3 main.py --agent ddqn --mode train
 ```
 
 ### Evaluating & Generating Reports
 Once the models are trained, run the evaluation suite to benchmark them against the Almgren-Chriss and TWAP baselines across the exact same market trajectories.
 ```bash
 # Test the two models
-python main.py --agent tabular --mode test
-python main.py --agent ddqn --mode test
+python3 main.py --agent tabular --mode test
+python3 main.py --agent ddqn --mode test
 
 # Generate the Gain-Loss Ratio CSV and the distribution plots
-python utils.py
+python3 utils.py
 ```
 
 ---
