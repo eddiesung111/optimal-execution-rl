@@ -64,6 +64,7 @@ While the DDQN hunts for massive momentum edges, the Tabular agent remains the m
 This proved critical on **MSFT** and **AMZN**, where the Tabular agent secured highly stable win probabilities (56.0% and 60.0%, respectively). When the DDQN became too aggressive on MSFT and posted a negative improvement (-2.16%), the conservative Tabular agent safely navigated the noise to pull a +5.78% edge. 
 
 **3. The Microstructure Trap: INTC**
+
 Both agents consistently fail to produce a positive edge on **INTC**, posting negative improvement scores and win rates below 50%. In the distribution plots, this is visible as a clear leftward shift for both models compared to the TWAP baseline. 
 This is not an algorithm failure; it is a vital microstructure anomaly. Intel (INTC) operates with a notably thicker, slower-moving limit order book compared to the other mega-cap tickers. In a compressed 8-minute execution window, a thick book suppresses the short-term directional momentum signals the agents rely on. When predictive signals decay to random noise, actively deviating from the TWAP baseline purely incurs spread-crossing costs. This empirically proves that in ultra-low volatility regimes, static execution remains mathematically optimal.
 
@@ -141,7 +142,6 @@ Before normalization, the features represent the following raw market dynamics:
 5. **Order Book Imbalance**: The ratio of buyers to sellers at the top of the book, naturally ranging from `[-1.0, 1.0]`. It represents which side is currently stronger. If the value is `< 0`, the ask side is heavier (more sellers), suggesting the price is about to fall.
 6. **Autocorrelation**: The rolling correlation of recent price changes `[-1.0, 1.0]`. To enable the agent to predict the trend on the next timestep. A positive value means the current price trend is strong and likely to continue, while a negative value suggests the trend is just noise and about to reverse.
 
----
 ## 🚧 Challenges & Architectural Evolution
 Building an RL agent on raw, high-frequency limit order book data presented several severe challenges that required pivoting away from standard academic assumptions.
 
@@ -158,7 +158,7 @@ To force the AI to execute intelligently, I modified the reward logic to heavily
   2. **Rolling Autocorrelation:** Allows the AI to predict if the current momentum is a mean-reverting blip or a continuing trend.
 * **The Result:** Once the AI could mathematically correlate the Autocorrelation state with the Inventory Risk reward, performance stabilized, and the models began successfully outperforming the TWAP baseline.
 
----
+
 ## 🧠 Model Architectures
 ### 1. Tabular Q-Learning Agent
 * **State Discretization (5 Features):** Converts continuous financial variables into fixed, discrete buckets to construct a finite Q-Table. The state space consists of five core features: **Spread, Time, Inventory, Volume, and Momentum**.
@@ -169,7 +169,7 @@ To force the AI to execute intelligently, I modified the reward logic to heavily
 * **Continuous State Space (6 Features):** Unlike the tabular model, the DDQN processes a strictly normalized `[-1.0, 1.0]` continuous state array. It utilizes six features: **Spread, Time, Inventory, Volume, Momentum, AND Autocorrelation**. 
 * **Architecture:** Implemented in PyTorch. A lightweight Multi-Layer Perceptron (MLP) utilizing a target network to evaluate the greedy policy dictated by the primary network. This eliminates the maximization bias (overestimation of Q-values) common in standard DQN algorithms.
 * **Advantage of the DDQN:** The primary advantage of the DDQN is its ability to natively handle **continuous, high-dimensional state spaces**. While the Tabular agent suffers from the "curse of dimensionality" (adding Autocorrelation would cause the Q-table size to explode exponentially), the DDQN scales effortlessly. By not forcing the data into rigid discrete buckets, the neural network learns a much more generalized, fluid trading policy that adapts smoothly to unseen market micro-states.
----
+
 
 ### Key Hyperparameters & Configuration
 To ensure full reproducibility, the agents were trained using the following core configurations. *(Note: Extensive hyperparameter tuning was required to stabilize the DDQN given the high noise-to-signal ratio of LOB data).*
@@ -195,11 +195,11 @@ To ensure full reproducibility, the agents were trained using the following core
 * **Target Update Frequency:** `2000`
 * **Batch Size:** `64`
 * **Replay Buffer Capacity:** `100,000` transitions
-* **Epsilon Decay:** `0.99980`
+* **Epsilon Decay:** `0.9998`
 * **Training Episodes:** `50,000`
 
+---
 ## ⚙️ Installation & Requirements
-
 This project requires Python 3.8+ and PyTorch. 
 
 1. Clone the repository:
@@ -242,8 +242,8 @@ python main.py --agent ddqn --mode test
 python utils.py
 ```
 
+---
 ## 📚 References
-
 This project adapts, modifies, and expands upon the theoretical frameworks and experimental designs presented in the following foundational quantitative finance literature:
 
 1. **Hendricks, D., & Wilcox, D. (2014).** *"A reinforcement learning extension to the Almgren-Chriss framework for optimal trade execution."* 2014 IEEE Conference on Computational Intelligence for Financial Engineering & Economics (CIFEr), pp. 457-464. 
