@@ -48,7 +48,7 @@ class QNetwork(nn.Module):
 class DDQNAgent:
     def __init__(self, state_dim=6, action_dim=11, lr=2.5e-4, gamma=0.99,
                 buffer_capacity=100000, batch_size=64, 
-                eps_start=1.0, eps_end=0.01, eps_decay=0.9998, 
+                eps_start=1.0, eps_end=0.01, eps_decay=0.99980, 
                 target_update_freq=2000):
         
         self.state_dim = state_dim
